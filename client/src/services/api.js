@@ -35,4 +35,17 @@ export const analyzeMarket = (messages) => {
         messages
     });
 };
+
+export const getChatHistory = () => {
+    return API.get("/api/chat/history");
+};
+
+export const getChatSession = (sessionId) => {
+    return API.get(`/api/chat/history/${sessionId}`);
+};
+
+export const deleteChatSession = (sessionId) => {
+    return API.delete(`/api/chat/history/${sessionId}`);
+};
+
 export default API;

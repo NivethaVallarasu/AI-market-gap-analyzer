@@ -1,19 +1,20 @@
-const OpenAI = require("openai");
+const { GoogleGenAI } = require("@google/genai");
 const { searchProducts } = require("./productHuntService");
 const { getAnalysisModelCandidates } = require("./aiService");
 
 let client = null;
 
 function getClient() {
-    if (!client && process.env.OPENROUTER_API_KEY) {
-        client = new OpenAI({
-            baseURL: "https://openrouter.ai/api/v1",
-            apiKey: process.env.OPENROUTER_API_KEY,
-            defaultHeaders: {
-                "HTTP-Referer": "http://localhost:5173",
-                "X-Title": "AI Market Gap Analyzer"
-            }
+    if (!process.env.GEMINI_API_KEY) {
+        client = null;
+        return null;
+    }
+
+    if (!client || client._apiKey !== process.env.GEMINI_API_KEY) {
+        client = new GoogleGenAI({
+            apiKey: process.env.GEMINI_API_KEY
         });
+        client._apiKey = process.env.GEMINI_API_KEY;
     }
 
     return client;
@@ -169,17 +170,31 @@ function mergeProductInsights(report, productData) {
     };
 }
 
+const analysisCache = new Map();
+
+function getConversationKey(messages = []) {
+    return messages.map((m) => `${m.sender}:${m.text}`).join("|");
+}
+
 async function analyzeIdea(messages) {
+    const cacheKey = getConversationKey(messages);
+    if (analysisCache.has(cacheKey)) {
+        return analysisCache.get(cacheKey);
+    }
+
     const fallbackReport = buildFallbackReport(messages);
     const productInsightsPromise = process.env.PRODUCT_HUNT_API_TOKEN
         ? searchProducts("AI").catch(() => null)
         : Promise.resolve(null);
 
-    if (!process.env.OPENROUTER_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
         try {
             const productData = await productInsightsPromise;
-            return mergeProductInsights(fallbackReport, productData);
+            const res = mergeProductInsights(fallbackReport, productData);
+            analysisCache.set(cacheKey, res);
+            return res;
         } catch (error) {
+            analysisCache.set(cacheKey, fallbackReport);
             return fallbackReport;
         }
     }
@@ -188,41 +203,43 @@ async function analyzeIdea(messages) {
         const activeClient = getClient();
 
         if (!activeClient) {
+            analysisCache.set(cacheKey, fallbackReport);
             return fallbackReport;
         }
 
-        let completion;
+        let response;
         let lastError;
-        const analysisMessages = [
-            {
-                role: "system",
-                content: "You are a startup market analyst. Analyze the latest product explicitly discussed by the user; if the user changed products, ignore earlier product ideas. Return a compact JSON object with opportunityScore (number), verdict (string), competitors (array of at least 7 specific relevant companies or alternatives), marketGaps (array of strings), swot (object with strengths, weaknesses, opportunities, threats arrays), and roadmap (array of strings)."
-            },
-            {
-                role: "user",
-                content: `Analyze this startup conversation and return only valid JSON.\n${(messages || []).map((msg) => `${msg.sender}: ${msg.text}`).join("\n")}`
-            }
-        ];
 
         for (const model of getAnalysisModelCandidates()) {
             try {
-                completion = await activeClient.chat.completions.create({
+                response = await activeClient.models.generateContent({
                     model,
-                    messages: analysisMessages,
-                    timeout: 10000
+                    contents: [
+                        {
+                            role: "user",
+                            parts: [{
+                                text: `Analyze this startup conversation and return only valid JSON.\n${(messages || []).map((msg) => `${msg.sender}: ${msg.text}`).join("\n")}`
+                            }]
+                        }
+                    ],
+                    config: {
+                        systemInstruction: "You are a startup market analyst. Analyze the latest product explicitly discussed by the user; if the user changed products, ignore earlier product ideas. Return a compact JSON object with opportunityScore (number), verdict (string), competitors (array of at least 7 specific relevant companies or alternatives), marketGaps (array of strings), swot (object with strengths, weaknesses, opportunities, threats arrays), and roadmap (array of strings).",
+                        responseMimeType: "application/json",
+                        temperature: 0
+                    }
                 });
-                break;
+                if (response?.text) break;
             } catch (error) {
                 lastError = error;
                 console.warn(`AI analysis model failed: ${model}`, error.message);
             }
         }
 
-        if (!completion) {
-            throw lastError || new Error("No AI model was available");
+        if (!response || !response.text) {
+            throw lastError || new Error("No AI model response was available");
         }
 
-        const content = completion?.choices?.[0]?.message?.content || "{}";
+        const content = response.text;
         const cleaned = content.replace(/```json|```/g, "").trim();
         const parsed = JSON.parse(cleaned);
 
@@ -240,6 +257,7 @@ async function analyzeIdea(messages) {
             roadmap: Array.isArray(parsed.roadmap) ? parsed.roadmap : fallbackReport.roadmap
         }, productData);
 
+        analysisCache.set(cacheKey, enriched);
         return enriched;
     } catch (error) {
         console.warn("AI analysis fallback triggered:", error.message);

@@ -33,9 +33,8 @@ The app uses AI in two main ways:
 - Market analysis: the backend creates a report using the conversation and AI-generated analysis.
 
 Used models:
-- inclusionai/ling-3.0-flash:free
-- nvidia/nemotron-3-super:free
-- nvidia/nemotron-3-ultra-550b-a55b:free
+- gemini-3.5-flash
+- gemini-3.5-flash-lite
 
 5. API Explanation
 - Chat API: /api/chat
@@ -44,7 +43,7 @@ Used models:
 
 6. External Resources and Services
 - MongoDB Atlas: stores conversation data.
-- OpenRouter: provides AI models.
+- Google Gemini API: provides AI models.
 - Product Hunt API: provides competitor/product insights.
 - Environment variables: configure API keys and database connection.
 

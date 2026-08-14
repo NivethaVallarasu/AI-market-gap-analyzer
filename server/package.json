@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "test": "node --test src/**/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +20,6 @@
     "express": "^5.2.1",
     "mammoth": "^1.12.1",
     "mongoose": "^9.8.1",
-    "openai": "^7.1.0",
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {

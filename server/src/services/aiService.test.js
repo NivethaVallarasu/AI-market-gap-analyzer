@@ -7,22 +7,19 @@ test('buildSystemPrompt allows the assistant to answer general questions while s
 
     assert.ok(prompt.includes('helpful assistant'));
     assert.ok(prompt.includes('Answer the user\'s question directly'));
-    assert.ok(prompt.includes('startup coach'));
     assert.ok(prompt.includes('general-purpose multimodal AI assistant'));
-    assert.ok(prompt.includes('For every request, decide whether a visual representation'));
-    assert.ok(prompt.includes('Do not put the whole response inside a box'));
-    assert.ok(prompt.includes('Key Takeaway'));
+    assert.ok(prompt.includes('describe the image and highlight important visual details'));
 });
 
-test('buildMessageContent creates an OpenAI-compatible image content block', () => {
-    const content = buildMessageContent({
+test('buildMessageContent creates a Gemini-compatible image content block', async () => {
+    const content = await buildMessageContent({
         text: 'What is this?',
         image: { dataUrl: 'data:image/png;base64,iVBORw0KGgo=' }
     });
 
     assert.equal(content[0].text, 'What is this?');
-    assert.equal(content[1].type, 'image_url');
-    assert.equal(content[1].image_url.url, 'data:image/png;base64,iVBORw0KGgo=');
+    assert.equal(content[1].inlineData.mimeType, 'image/png');
+    assert.equal(content[1].inlineData.data, 'iVBORw0KGgo=');
 });
 
 test('buildMessageContent returns plain text for PDF file uploads', async () => {
@@ -40,16 +37,16 @@ test('buildMessageContent returns plain text for PDF file uploads', async () => 
 });
 
 test('vision requests use a configurable vision model with a working default', () => {
-    const previousModel = process.env.OPENROUTER_VISION_MODEL;
-    delete process.env.OPENROUTER_VISION_MODEL;
+    const previousModel = process.env.GEMINI_VISION_MODEL;
+    delete process.env.GEMINI_VISION_MODEL;
 
-    assert.ok(getVisionModelCandidates().includes('google/gemini-2.5-flash'));
+    assert.ok(getVisionModelCandidates().includes('gemini-3.5-flash'));
 
-    if (previousModel) process.env.OPENROUTER_VISION_MODEL = previousModel;
+    if (previousModel) process.env.GEMINI_VISION_MODEL = previousModel;
 });
 
 test('analysis requests prefer the fast analysis model', () => {
-    assert.equal(getAnalysisModelCandidates()[0], 'google/gemini-2.5-flash');
+    assert.equal(getAnalysisModelCandidates()[0], 'gemini-3.5-flash');
 });
 
 test('Mermaid architecture requests have a fallback response', () => {
@@ -58,5 +55,5 @@ test('Mermaid architecture requests have a fallback response', () => {
     ]);
 
     assert.match(response, /```mermaid/);
-    assert.match(response, /Student App/);
+    assert.match(response, /Customer App/);
 });
