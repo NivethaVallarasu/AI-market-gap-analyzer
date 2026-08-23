@@ -6,6 +6,11 @@ require("dotenv").config();
 const analysisRoutes = require("./routes/analysisRoutes");
 const connectDB = require("./config/db");
 const chatRoutes = require("./routes/chatRoutes");
+<<<<<<< HEAD
+=======
+const authRoutes = require("./routes/authRoutes");
+const analysisHistoryRoutes = require("./routes/analysisHistoryRoutes");
+>>>>>>> 4b7f4a6 (Signup and)
 
 const app = express();
 
@@ -14,6 +19,11 @@ connectDB();
 app.use(cors());
 app.use(express.json({ limit: "12mb" }));
 app.use("/api/products", productRoutes);
+<<<<<<< HEAD
+=======
+app.use("/api/auth", authRoutes);
+app.use("/api/analyses", analysisHistoryRoutes);
+>>>>>>> 4b7f4a6 (Signup and)
 app.use("/api/analyze", analysisRoutes);
 app.get("/", (req, res) => {
     res.json({

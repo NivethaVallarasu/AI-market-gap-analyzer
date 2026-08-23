@@ -52,8 +52,14 @@ const chat = async (req, res) => {
         // Save conversation in MongoDB (non-blocking failure)
         try {
             await Conversation.findOneAndUpdate(
+<<<<<<< HEAD
                 { sessionId },
                 {
+=======
+                { userId: req.user.userId, sessionId },
+                {
+                    userId: req.user.userId,
+>>>>>>> 4b7f4a6 (Signup and)
                     sessionId,
                     messages: updatedMessages
                 },
@@ -82,7 +88,11 @@ const chat = async (req, res) => {
 
 const getHistory = async (req, res) => {
     try {
+<<<<<<< HEAD
         const conversations = await Conversation.find({}, "sessionId messages updatedAt")
+=======
+        const conversations = await Conversation.find({ userId: req.user.userId }, "sessionId messages updatedAt")
+>>>>>>> 4b7f4a6 (Signup and)
             .sort({ updatedAt: -1 })
             .limit(30);
 
@@ -104,7 +114,11 @@ const getHistory = async (req, res) => {
 const getSession = async (req, res) => {
     try {
         const { sessionId } = req.params;
+<<<<<<< HEAD
         const conversation = await Conversation.findOne({ sessionId });
+=======
+        const conversation = await Conversation.findOne({ userId: req.user.userId, sessionId });
+>>>>>>> 4b7f4a6 (Signup and)
         if (!conversation) {
             return res.status(404).json({ error: "Session not found" });
         }
@@ -117,7 +131,11 @@ const getSession = async (req, res) => {
 const deleteSession = async (req, res) => {
     try {
         const { sessionId } = req.params;
+<<<<<<< HEAD
         await Conversation.deleteOne({ sessionId });
+=======
+        await Conversation.deleteOne({ userId: req.user.userId, sessionId });
+>>>>>>> 4b7f4a6 (Signup and)
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: error.message });

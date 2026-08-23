@@ -1,0 +1,7 @@
+git remote add origin https://github.com/Monika-11-07/AI-Market-Gap-Analyzer.git
+git branch -M main
+git push -u origin main
+
+https://ai-market-gap-analyzer.onrender.com/
+
+https://ai-market-gap-analyzer-d351-9eekx7g00-monika-s-s-projects.vercel.app/

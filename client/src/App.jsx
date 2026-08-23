@@ -1,8 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+<<<<<<< HEAD
 import { FiSend, FiMessageCircle, FiBarChart2, FiPaperclip, FiX, FiStar, FiUser, FiCpu, FiCopy, FiCheck, FiPlus, FiTrash2, FiClock, FiSidebar } from "react-icons/fi";
 import mermaid from "mermaid";
 import { sendMessage, analyzeMarket, getChatHistory, getChatSession, deleteChatSession } from "./services/api";
+=======
+import { FiSend, FiMessageCircle, FiBarChart2, FiPaperclip, FiX, FiStar, FiUser, FiCpu, FiCopy, FiCheck, FiPlus, FiTrash2, FiClock, FiSidebar, FiArrowRight, FiEye, FiEyeOff, FiShield, FiLogOut } from "react-icons/fi";
+import mermaid from "mermaid";
+import { sendMessage, analyzeMarket, getChatHistory, getChatSession, deleteChatSession, signup, login, logout, getMe, updateProfile, getAnalyses, deleteAnalysis } from "./services/api";
+>>>>>>> 4b7f4a6 (Signup and)
 
 mermaid.initialize({
     startOnLoad: false,
@@ -311,7 +317,138 @@ function MessageContent({ text, isBot }) {
     return blocks;
 }
 
+<<<<<<< HEAD
 function App() {
+=======
+function AuthScreen({ onAuthenticated }) {
+    const [mode, setMode] = useState("login");
+    const [showPassword, setShowPassword] = useState(false);
+    const [form, setForm] = useState({ name: "", email: "", password: "", remember: true, terms: false });
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [legalPage, setLegalPage] = useState(null);
+
+    const isSignup = mode === "signup";
+
+    const updateField = (event) => {
+        const { name, value, checked, type } = event.target;
+        setForm((current) => ({ ...current, [name]: type === "checkbox" ? checked : value }));
+        setError("");
+        setSuccess("");
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        if (isSignup && !form.name.trim()) return setError("Please enter your full name.");
+        if (!/^\S+@\S+\.\S+$/.test(form.email)) return setError("Please enter a valid work email.");
+        if (form.password.length < 8) return setError("Your password must be at least 8 characters.");
+        if (isSignup && !form.terms) return setError("Please accept the terms to continue.");
+
+        setIsSubmitting(true);
+        try {
+            if (isSignup) {
+                await signup(form.name.trim(), form.email.trim(), form.password);
+                setMode("login");
+                setForm((current) => ({ ...current, password: "", terms: false }));
+                setSuccess("Account created. Sign in to enter your workspace.");
+            } else {
+                const response = await login(form.email.trim(), form.password);
+                const storage = form.remember ? window.localStorage : window.sessionStorage;
+                storage.setItem("ai-market-gap-auth-token", response.data.token);
+                onAuthenticated();
+            }
+        } catch (requestError) {
+            setError(requestError.response?.data?.error || "Something went wrong. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <main className="auth-page">
+            <div className="auth-orbit auth-orbit-one" />
+            <div className="auth-orbit auth-orbit-two" />
+            <div className="auth-shell">
+                <section className="auth-story">
+                    <div className="auth-brand"><span className="auth-brand-mark"><FiBarChart2 size={19} /></span><span>Market Gap</span></div>
+                    <div className="auth-story-copy">
+                        <p className="auth-eyebrow">Intelligence for the next move</p>
+                        <h1>Turn a sharp idea into a clearer opportunity.</h1>
+                        <p className="auth-story-text">Research markets, pressure-test your thinking, and find the signal before you build.</p>
+                    </div>
+                    <div className="auth-proof">
+                        <div className="auth-proof-avatars"><span>AR</span><span>MK</span><span>JD</span></div>
+                        <div><strong>Built for curious founders</strong><small>Make your next decision with context.</small></div>
+                    </div>
+                </section>
+
+                <section className="auth-panel">
+                    <div className="auth-panel-heading">
+                        <span className="auth-kicker">Welcome to your workspace</span>
+                        <h2>{isSignup ? "Create your account" : "Welcome back"}</h2>
+                        <p>{isSignup ? "Start turning market uncertainty into momentum." : "Pick up your market research where you left off."}</p>
+                    </div>
+
+                    <div className="auth-tabs" role="tablist" aria-label="Authentication mode">
+                        <button type="button" className={!isSignup ? "is-active" : ""} onClick={() => { setMode("login"); setError(""); }}>Sign in</button>
+                        <button type="button" className={isSignup ? "is-active" : ""} onClick={() => { setMode("signup"); setError(""); }}>Create account</button>
+                    </div>
+
+                    <form className="auth-form" onSubmit={handleSubmit}>
+                        {isSignup && <label>Full name<input name="name" value={form.name} onChange={updateField} placeholder="Alex Morgan" autoComplete="name" /></label>}
+                        <label>Work email<input name="email" type="email" value={form.email} onChange={updateField} placeholder="you@company.com" autoComplete="email" /></label>
+                        <label>Password
+                            <span className="auth-password-wrap"><input name="password" type={showPassword ? "text" : "password"} value={form.password} onChange={updateField} placeholder="At least 8 characters" autoComplete={isSignup ? "new-password" : "current-password"} /><button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-label={showPassword ? "Hide password" : "Show password"}>{showPassword ? <FiEyeOff /> : <FiEye />}</button></span>
+                        </label>
+                        {isSignup ? <label className="auth-check"><input name="terms" type="checkbox" checked={form.terms} onChange={updateField} /><span>I agree to the <button type="button" className="auth-inline-link" onClick={() => setLegalPage("Terms of Service")}>Terms of Service</button> and <button type="button" className="auth-inline-link" onClick={() => setLegalPage("Privacy Policy")}>Privacy Policy</button>.</span></label> : <div className="auth-form-row"><label className="auth-check"><input name="remember" type="checkbox" checked={form.remember} onChange={updateField} /><span>Remember me</span></label><button type="button" className="auth-link">Forgot password?</button></div>}
+                        {success && <p className="auth-success" role="status">{success}</p>}
+                        {error && <p className="auth-error" role="alert">{error}</p>}
+                        <button className="auth-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? "Checking..." : (isSignup ? "Create account" : "Sign in to workspace")}<FiArrowRight size={17} /></button>
+                    </form>
+
+                    <div className="auth-secure"><FiShield size={15} /><span>Your data stays private and secure.</span></div>
+                    <p className="auth-switch">{isSignup ? "Already have an account?" : "New to Market Gap?"} <button type="button" onClick={() => { setMode(isSignup ? "login" : "signup"); setError(""); }}>{isSignup ? "Sign in" : "Create a free account"}</button></p>
+                </section>
+            </div>
+            {legalPage && <div className="auth-legal-backdrop" role="presentation" onClick={() => setLegalPage(null)}><section className="auth-legal-dialog" role="dialog" aria-modal="true" aria-labelledby="legal-title" onClick={(event) => event.stopPropagation()}><button type="button" className="auth-legal-close" onClick={() => setLegalPage(null)} aria-label="Close policy">×</button><p className="auth-kicker">Market Gap</p><h2 id="legal-title">{legalPage}</h2><p>We use your account information to provide your private market research workspace. Your password is securely encrypted, and your analyses are visible only to your account.</p><p>By continuing, you agree to use the service responsibly and understand that generated insights are informational and should be reviewed before making business decisions.</p><button type="button" className="auth-submit" onClick={() => setLegalPage(null)}>Close</button></section></div>}
+        </main>
+    );
+}
+
+function ProfilePage({ user, analysesCount, onBack, onSave }) {
+    const [name, setName] = useState(user?.name || "");
+    const [message, setMessage] = useState("");
+    const [error, setError] = useState("");
+    const [saving, setSaving] = useState(false);
+    const save = async (event) => {
+        event.preventDefault();
+        if (!name.trim()) return setError("Name is required.");
+        setSaving(true); setError("");
+        try { const response = await updateProfile(name.trim()); onSave(response.data.user); setMessage("Profile updated successfully."); }
+        catch (requestError) { setError(requestError.response?.data?.error || "Could not update profile."); }
+        finally { setSaving(false); }
+    };
+    return <main className="min-h-screen overflow-y-auto bg-slate-950 p-5 text-white sm:p-10"><div className="mx-auto max-w-3xl"><button onClick={onBack} className="mb-8 text-sm text-slate-400 hover:text-white">← Back to workspace</button><div className="rounded-2xl border border-slate-800 bg-slate-900 p-6 sm:p-10"><p className="text-xs font-semibold uppercase tracking-[.18em] text-emerald-400">Account profile</p><div className="mt-5 flex items-center gap-4"><div className="flex h-16 w-16 items-center justify-center rounded-full bg-indigo-600 text-xl font-bold">{(name || "U").slice(0, 1).toUpperCase()}</div><div><h1 className="text-2xl font-bold">Your profile</h1><p className="text-sm text-slate-400">Manage your workspace identity and activity.</p></div></div><form onSubmit={save} className="mt-10 max-w-xl space-y-5"><label className="block text-sm font-medium text-slate-300">Full name<input value={name} onChange={(event) => { setName(event.target.value); setError(""); }} className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-indigo-500" /></label><label className="block text-sm font-medium text-slate-300">Email<input value={user?.email || ""} disabled className="mt-2 w-full rounded-xl border border-slate-800 bg-slate-950/60 px-4 py-3 text-slate-500" /></label>{error && <p className="text-sm text-rose-400">{error}</p>}{message && <p className="text-sm text-emerald-400">{message}</p>}<button disabled={saving} className="rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold hover:bg-indigo-500 disabled:opacity-50">{saving ? "Saving..." : "Save changes"}</button></form><div className="mt-10 grid gap-4 border-t border-slate-800 pt-6 sm:grid-cols-2"><div><p className="text-xs uppercase tracking-wider text-slate-500">Analyses created</p><p className="mt-2 text-2xl font-bold">{analysesCount}</p></div><div><p className="text-xs uppercase tracking-wider text-slate-500">Member since</p><p className="mt-2 text-sm text-slate-300">{user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "Recently"}</p></div></div></div></div></main>;
+}
+
+function AnalysisHistoryPage({ analyses, error, onBack, onDelete }) {
+    return <main className="min-h-screen overflow-y-auto bg-slate-950 p-5 text-white sm:p-10"><div className="mx-auto max-w-5xl"><button onClick={onBack} className="mb-8 text-sm text-slate-400 hover:text-white">← Back to workspace</button><div className="mb-8"><p className="text-xs font-semibold uppercase tracking-[.18em] text-emerald-400">Private workspace</p><h1 className="mt-2 text-3xl font-bold">My analyses</h1><p className="mt-2 text-sm text-slate-400">Your saved market opportunity reports.</p></div>{error && <p className="mb-5 rounded-xl border border-rose-900/70 bg-rose-950/30 p-4 text-sm text-rose-300">{error}</p>}{analyses.length ? <div className="space-y-3">{analyses.map((item) => <div key={item._id} className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900 p-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold text-slate-100">{item.title}</h2><p className="mt-1 text-xs text-slate-500">{new Date(item.createdAt).toLocaleString()} · Score {item.report?.opportunityScore ?? "--"}/100</p></div><button onClick={() => onDelete(item._id)} className="self-start rounded-lg border border-rose-900/70 px-3 py-2 text-xs text-rose-300 hover:bg-rose-950/50">Delete</button></div>)}</div> : <div className="rounded-2xl border border-dashed border-slate-700 p-10 text-center text-sm text-slate-500">{error ? "History is unavailable right now." : "No saved analyses yet. Run your first analysis from the workspace."}</div>}</div></main>;
+}
+
+function App() {
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        try {
+            return Boolean(window.localStorage.getItem("ai-market-gap-auth-token") || window.sessionStorage.getItem("ai-market-gap-auth-token"));
+        } catch {
+            return false;
+        }
+    });
+    const [user, setUser] = useState(null);
+    const [page, setPage] = useState("workspace");
+    const [analyses, setAnalyses] = useState([]);
+    const [dataError, setDataError] = useState("");
+>>>>>>> 4b7f4a6 (Signup and)
     const [sessionId, setSessionId] = useState(() => uuidv4());
     const [message, setMessage] = useState("");
     const [analysis, setAnalysis] = useState(null);
@@ -342,8 +479,35 @@ function App() {
     };
 
     useEffect(() => {
+<<<<<<< HEAD
         fetchHistory();
     }, []);
+=======
+        if (!isAuthenticated) return;
+        let active = true;
+        getChatHistory().then((response) => {
+            if (active) setHistory(response.data?.history || []);
+        }).catch((requestError) => {
+            if (active && requestError.response?.status === 401) handleSignOut();
+        });
+        getMe().then((response) => {
+            if (active) setUser({ ...response.data.user, createdAt: response.data.createdAt });
+        }).catch(() => {
+            if (active) handleSignOut();
+        });
+        getAnalyses().then((response) => {
+            if (active) setAnalyses(response.data.analyses || []);
+        }).catch((requestError) => {
+            if (!active) return;
+            if (requestError.response?.status === 401) handleSignOut();
+            else setDataError("Your private analysis history could not be loaded.");
+        });
+
+        return () => {
+            active = false;
+        };
+    }, [isAuthenticated]);
+>>>>>>> 4b7f4a6 (Signup and)
 
     const startNewChat = () => {
         setSessionId(uuidv4());
@@ -358,6 +522,33 @@ function App() {
         setMessage("");
     };
 
+<<<<<<< HEAD
+=======
+    const handleSignOut = async () => {
+        try { await logout(); } catch { /* The local token is still cleared below. */ }
+        try {
+            window.localStorage.removeItem("ai-market-gap-auth-token");
+            window.sessionStorage.removeItem("ai-market-gap-auth-token");
+        } catch {
+            // Continue to the sign-in screen if browser storage is unavailable.
+        }
+        setUser(null);
+        setAnalyses([]);
+        setHistory([]);
+        setPage("workspace");
+        setSessionId(uuidv4());
+        setMessages([{
+            sender: "bot",
+            text: "Hi! 👋 I'm your AI Market Gap Analyzer. What startup idea are you planning to build?"
+        }]);
+        setAnalysis(null);
+        setMessage("");
+        setSelectedAttachment(null);
+        setDataError("");
+        setIsAuthenticated(false);
+    };
+
+>>>>>>> 4b7f4a6 (Signup and)
     const handleSelectSession = async (targetSessionId) => {
         try {
             const res = await getChatSession(targetSessionId);
@@ -490,7 +681,11 @@ function App() {
                 ...updatedMessages,
                 {
                     sender: "bot",
+<<<<<<< HEAD
                     text: error.response?.data?.error || "Sorry, the message could not be processed."
+=======
+                    text: error.response?.data?.error || error.message || "Sorry, the message could not be processed."
+>>>>>>> 4b7f4a6 (Signup and)
                 }
             ]);
 
@@ -545,7 +740,11 @@ function App() {
     setIsAnalyzing(true);
     try {
 
+<<<<<<< HEAD
         const response = await analyzeMarket(messages);
+=======
+        const response = await analyzeMarket(messages, sessionId);
+>>>>>>> 4b7f4a6 (Signup and)
         const report = response?.data ?? {};
 
         setAnalysis({
@@ -556,6 +755,13 @@ function App() {
             swot: report.swot && typeof report.swot === "object" ? report.swot : {},
             roadmap: Array.isArray(report.roadmap) ? report.roadmap : []
         });
+<<<<<<< HEAD
+=======
+        getAnalyses().then((result) => {
+            setAnalyses(result.data.analyses || []);
+            setDataError("");
+        }).catch(() => setDataError("Your analysis was created, but history could not be refreshed."));
+>>>>>>> 4b7f4a6 (Signup and)
 
     } catch (error) {
 
@@ -575,6 +781,13 @@ function App() {
     }
 
 };
+<<<<<<< HEAD
+=======
+    if (!isAuthenticated) return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
+    if (page === "profile") return <ProfilePage user={user} analysesCount={analyses.length} onBack={() => setPage("workspace")} onSave={(updatedUser) => setUser((current) => ({ ...current, ...updatedUser }))} />;
+    if (page === "history") return <AnalysisHistoryPage analyses={analyses} error={dataError} onBack={() => setPage("workspace")} onDelete={async (id) => { await deleteAnalysis(id); setAnalyses((current) => current.filter((item) => item._id !== id)); }} />;
+
+>>>>>>> 4b7f4a6 (Signup and)
     return (
         <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-slate-950 text-white">
             <header className="flex-none border-b border-slate-800 px-4 py-3.5 sm:px-6">
@@ -599,6 +812,7 @@ function App() {
                             </p>
                         </div>
                     </div>
+<<<<<<< HEAD
                     <button
                         type="button"
                         onClick={startNewChat}
@@ -607,6 +821,29 @@ function App() {
                         <FiPlus size={16} />
                         <span>New Chat</span>
                     </button>
+=======
+                    <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setPage("profile")} title="Open profile" className="hidden items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-slate-700 hover:text-white sm:flex"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold">{(user?.name || "U").slice(0, 1).toUpperCase()}</span>{user?.name || "Profile"}</button>
+                        <button type="button" onClick={() => setPage("history")} title="Open analysis history" className="hidden rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-slate-700 hover:text-white sm:block">My analyses</button>
+                        <button
+                            type="button"
+                            onClick={startNewChat}
+                            className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500 sm:text-sm"
+                        >
+                            <FiPlus size={16} />
+                            <span>New Chat</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSignOut}
+                            title="Sign out"
+                            aria-label="Sign out"
+                            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-800 bg-slate-900 text-slate-400 transition hover:border-rose-500/60 hover:text-rose-300"
+                        >
+                            <FiLogOut size={17} />
+                        </button>
+                    </div>
+>>>>>>> 4b7f4a6 (Signup and)
                 </div>
             </header>
 
