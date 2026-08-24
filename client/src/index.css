@@ -9,9 +9,6 @@ body,
 
 body {
 	margin: 0;
-<<<<<<< HEAD
-}
-=======
 }
 
 .auth-page {
@@ -62,4 +59,3 @@ body {
 .auth-legal-backdrop { position: fixed; inset: 0; z-index: 5; display: grid; place-items: center; padding: 24px; background: rgba(20, 61, 57, .42); }
 .auth-legal-dialog { position: relative; width: min(460px, 100%); padding: 34px; background: #fffdf9; color: var(--ink); box-shadow: 0 20px 60px rgba(15, 45, 38, .25); }
 .auth-legal-dialog h2 { margin: 8px 0 16px; font-size: 28px; font-weight: 400; }.auth-legal-dialog p:not(.auth-kicker) { color: var(--muted); font: 13px/1.7 Arial, sans-serif; }.auth-legal-close { position: absolute; top: 12px; right: 15px; border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 26px; }
->>>>>>> 4b7f4a6 (Signup and)

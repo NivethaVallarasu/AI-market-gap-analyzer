@@ -1,18 +1,11 @@
 const { analyzeIdea } = require("../services/analysisService");
-<<<<<<< HEAD
-=======
 const Analysis = require("../models/Analysis");
->>>>>>> 4b7f4a6 (Signup and)
 
 const analyzeMarket = async (req, res) => {
 console.log("===== Analyze API HIT =====");
     try {
 
         const { messages } = req.body;
-<<<<<<< HEAD
-
-        const report = await analyzeIdea(messages);
-=======
         if (!Array.isArray(messages) || messages.length === 0) {
             return res.status(400).json({ error: "Messages are required" });
         }
@@ -25,7 +18,6 @@ console.log("===== Analyze API HIT =====");
             messages: messages.map(({ sender, text }) => ({ sender, text })),
             report
         });
->>>>>>> 4b7f4a6 (Signup and)
 
         res.json(report);
 

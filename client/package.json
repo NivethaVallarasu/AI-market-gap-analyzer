@@ -11,11 +11,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
-<<<<<<< HEAD
-    "axios": "^1.18.1",
-=======
     "axios": "^1.19.0",
->>>>>>> 4b7f4a6 (Signup and)
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "mermaid": "^11.16.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
@@ -32,10 +30,6 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
-<<<<<<< HEAD
-    "vite": "^8.1.1"
-=======
     "vite": "^8.2.1"
->>>>>>> 4b7f4a6 (Signup and)
   }
 }

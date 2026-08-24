@@ -1,14 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-<<<<<<< HEAD
-import { FiSend, FiMessageCircle, FiBarChart2, FiPaperclip, FiX, FiStar, FiUser, FiCpu, FiCopy, FiCheck, FiPlus, FiTrash2, FiClock, FiSidebar } from "react-icons/fi";
+import { FiSend, FiMessageCircle, FiBarChart2, FiPaperclip, FiX, FiStar, FiUser, FiCpu, FiCopy, FiCheck, FiPlus, FiTrash2, FiClock, FiSidebar, FiArrowRight, FiEye, FiEyeOff, FiShield, FiLogOut, FiDownload } from "react-icons/fi";
 import mermaid from "mermaid";
-import { sendMessage, analyzeMarket, getChatHistory, getChatSession, deleteChatSession } from "./services/api";
-=======
-import { FiSend, FiMessageCircle, FiBarChart2, FiPaperclip, FiX, FiStar, FiUser, FiCpu, FiCopy, FiCheck, FiPlus, FiTrash2, FiClock, FiSidebar, FiArrowRight, FiEye, FiEyeOff, FiShield, FiLogOut } from "react-icons/fi";
-import mermaid from "mermaid";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { sendMessage, analyzeMarket, getChatHistory, getChatSession, deleteChatSession, signup, login, logout, getMe, updateProfile, getAnalyses, deleteAnalysis } from "./services/api";
->>>>>>> 4b7f4a6 (Signup and)
 
 mermaid.initialize({
     startOnLoad: false,
@@ -317,9 +313,7 @@ function MessageContent({ text, isBot }) {
     return blocks;
 }
 
-<<<<<<< HEAD
-function App() {
-=======
+
 function AuthScreen({ onAuthenticated }) {
     const [mode, setMode] = useState("login");
     const [showPassword, setShowPassword] = useState(false);
@@ -448,7 +442,6 @@ function App() {
     const [page, setPage] = useState("workspace");
     const [analyses, setAnalyses] = useState([]);
     const [dataError, setDataError] = useState("");
->>>>>>> 4b7f4a6 (Signup and)
     const [sessionId, setSessionId] = useState(() => uuidv4());
     const [message, setMessage] = useState("");
     const [analysis, setAnalysis] = useState(null);
@@ -464,6 +457,8 @@ function App() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isExportingPdf, setIsExportingPdf] = useState(false);
+    const insightsRef = useRef(null);
     const [history, setHistory] = useState([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -479,10 +474,6 @@ function App() {
     };
 
     useEffect(() => {
-<<<<<<< HEAD
-        fetchHistory();
-    }, []);
-=======
         if (!isAuthenticated) return;
         let active = true;
         getChatHistory().then((response) => {
@@ -507,7 +498,6 @@ function App() {
             active = false;
         };
     }, [isAuthenticated]);
->>>>>>> 4b7f4a6 (Signup and)
 
     const startNewChat = () => {
         setSessionId(uuidv4());
@@ -522,8 +512,6 @@ function App() {
         setMessage("");
     };
 
-<<<<<<< HEAD
-=======
     const handleSignOut = async () => {
         try { await logout(); } catch { /* The local token is still cleared below. */ }
         try {
@@ -547,8 +535,6 @@ function App() {
         setDataError("");
         setIsAuthenticated(false);
     };
-
->>>>>>> 4b7f4a6 (Signup and)
     const handleSelectSession = async (targetSessionId) => {
         try {
             const res = await getChatSession(targetSessionId);
@@ -681,11 +667,7 @@ function App() {
                 ...updatedMessages,
                 {
                     sender: "bot",
-<<<<<<< HEAD
-                    text: error.response?.data?.error || "Sorry, the message could not be processed."
-=======
                     text: error.response?.data?.error || error.message || "Sorry, the message could not be processed."
->>>>>>> 4b7f4a6 (Signup and)
                 }
             ]);
 
@@ -740,11 +722,7 @@ function App() {
     setIsAnalyzing(true);
     try {
 
-<<<<<<< HEAD
-        const response = await analyzeMarket(messages);
-=======
         const response = await analyzeMarket(messages, sessionId);
->>>>>>> 4b7f4a6 (Signup and)
         const report = response?.data ?? {};
 
         setAnalysis({
@@ -755,39 +733,139 @@ function App() {
             swot: report.swot && typeof report.swot === "object" ? report.swot : {},
             roadmap: Array.isArray(report.roadmap) ? report.roadmap : []
         });
-<<<<<<< HEAD
-=======
         getAnalyses().then((result) => {
             setAnalyses(result.data.analyses || []);
             setDataError("");
         }).catch(() => setDataError("Your analysis was created, but history could not be refreshed."));
->>>>>>> 4b7f4a6 (Signup and)
 
     } catch (error) {
 
         console.error("Analyze Error:", error);
 
-        setAnalysis({
-            opportunityScore: 0,
-            verdict: "Unable to analyze right now. Please try again.",
-            competitors: [],
-            marketGaps: [],
-            swot: {},
-            roadmap: []
-        });
-
     } finally {
         setIsAnalyzing(false);
     }
-
 };
-<<<<<<< HEAD
-=======
+
+    const handleDownloadInsightsPDF = async () => {
+        if (!analysis || isExportingPdf) return;
+
+        setIsExportingPdf(true);
+        const dateStr = new Date().toISOString().split("T")[0];
+
+        try {
+            if (insightsRef.current) {
+                const canvas = await html2canvas(insightsRef.current, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: "#020617",
+                    logging: false,
+                    windowWidth: insightsRef.current.scrollWidth,
+                    windowHeight: insightsRef.current.scrollHeight
+                });
+
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF({
+                    orientation: "portrait",
+                    unit: "mm",
+                    format: "a4"
+                });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pdfWidth;
+                const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pdfHeight;
+
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+                }
+
+                pdf.save(`Market_Insights_${dateStr}.pdf`);
+                return;
+            }
+        } catch (err) {
+            console.warn("Canvas PDF generation failed, falling back to text PDF:", err);
+        }
+
+        try {
+            const pdf = new jsPDF();
+            let y = 15;
+
+            pdf.setFontSize(18);
+            pdf.text("Market Insights Report", 14, y);
+            y += 10;
+
+            pdf.setFontSize(12);
+            pdf.text(`Date: ${dateStr}`, 14, y);
+            y += 8;
+            pdf.text(`Opportunity Score: ${analysis.opportunityScore ?? "--"}/100`, 14, y);
+            y += 12;
+
+            const addSection = (title, items) => {
+                if (y > 270) { pdf.addPage(); y = 15; }
+                pdf.setFontSize(14);
+                pdf.text(title, 14, y);
+                y += 7;
+                pdf.setFontSize(10);
+
+                if (Array.isArray(items)) {
+                    if (items.length === 0) {
+                        pdf.text("- None", 18, y);
+                        y += 6;
+                    } else {
+                        items.forEach((item) => {
+                            const splitText = pdf.splitTextToSize(`- ${item}`, 180);
+                            splitText.forEach((line) => {
+                                if (y > 275) { pdf.addPage(); y = 15; }
+                                pdf.text(line, 18, y);
+                                y += 6;
+                            });
+                        });
+                    }
+                } else if (typeof items === "string") {
+                    const splitText = pdf.splitTextToSize(items, 180);
+                    splitText.forEach((line) => {
+                        if (y > 275) { pdf.addPage(); y = 15; }
+                        pdf.text(line, 14, y);
+                        y += 6;
+                    });
+                }
+                y += 4;
+            };
+
+            addSection("Verdict", analysis.verdict || "No verdict available.");
+            addSection("Competitors", analysis.competitors || []);
+            addSection("Market Gaps", analysis.marketGaps || []);
+
+            if (analysis.swot && typeof analysis.swot === "object") {
+                Object.entries(analysis.swot).forEach(([key, items]) => {
+                    addSection(`SWOT: ${key.toUpperCase()}`, items || []);
+                });
+            }
+
+            addSection("Roadmap", analysis.roadmap || []);
+
+            pdf.save(`Market_Insights_${dateStr}.pdf`);
+        } catch (fallbackError) {
+            console.error("Text PDF export failed:", fallbackError);
+            alert("Could not generate PDF download. Please try again.");
+        } finally {
+            setIsExportingPdf(false);
+        }
+    };
+
     if (!isAuthenticated) return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
     if (page === "profile") return <ProfilePage user={user} analysesCount={analyses.length} onBack={() => setPage("workspace")} onSave={(updatedUser) => setUser((current) => ({ ...current, ...updatedUser }))} />;
     if (page === "history") return <AnalysisHistoryPage analyses={analyses} error={dataError} onBack={() => setPage("workspace")} onDelete={async (id) => { await deleteAnalysis(id); setAnalyses((current) => current.filter((item) => item._id !== id)); }} />;
-
->>>>>>> 4b7f4a6 (Signup and)
     return (
         <div className="flex h-screen min-h-0 flex-col overflow-hidden bg-slate-950 text-white">
             <header className="flex-none border-b border-slate-800 px-4 py-3.5 sm:px-6">
@@ -812,16 +890,6 @@ function App() {
                             </p>
                         </div>
                     </div>
-<<<<<<< HEAD
-                    <button
-                        type="button"
-                        onClick={startNewChat}
-                        className="flex items-center gap-2 rounded-xl bg-indigo-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-indigo-500 sm:text-sm"
-                    >
-                        <FiPlus size={16} />
-                        <span>New Chat</span>
-                    </button>
-=======
                     <div className="flex items-center gap-2">
                         <button type="button" onClick={() => setPage("profile")} title="Open profile" className="hidden items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-slate-700 hover:text-white sm:flex"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-[10px] font-bold">{(user?.name || "U").slice(0, 1).toUpperCase()}</span>{user?.name || "Profile"}</button>
                         <button type="button" onClick={() => setPage("history")} title="Open analysis history" className="hidden rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300 transition hover:border-slate-700 hover:text-white sm:block">My analyses</button>
@@ -843,7 +911,6 @@ function App() {
                             <FiLogOut size={17} />
                         </button>
                     </div>
->>>>>>> 4b7f4a6 (Signup and)
                 </div>
             </header>
 
@@ -1028,17 +1095,31 @@ function App() {
 
                 <section className="flex min-h-0 min-w-0 flex-1 flex-col">
                     <div className="flex-none border-b border-slate-800 px-4 py-3 sm:px-6">
-                        <div className="flex items-center gap-3">
-                            <FiBarChart2 className="text-emerald-400" />
-                            <div>
-                                <h2 className="font-semibold text-slate-100">Market Insights</h2>
-                                <p className="mt-1 text-xs text-slate-500">Your generated opportunity report</p>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <FiBarChart2 className="text-emerald-400" size={22} />
+                                <div>
+                                    <h2 className="font-semibold text-slate-100">Market Insights</h2>
+                                    <p className="mt-1 text-xs text-slate-500">Your generated opportunity report</p>
+                                </div>
                             </div>
+                            {analysis && (
+                                <button
+                                    type="button"
+                                    onClick={handleDownloadInsightsPDF}
+                                    disabled={isExportingPdf}
+                                    title="Download Market Insights as PDF"
+                                    className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <FiDownload size={15} />
+                                    <span>{isExportingPdf ? "Generating PDF..." : "Download PDF"}</span>
+                                </button>
+                            )}
                         </div>
                     </div>
 
                     <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-6">
-                        <div className="space-y-5 pb-6">
+                        <div ref={insightsRef} className="space-y-5 pb-6 bg-slate-950 p-2 rounded-2xl">
                             <div className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
                                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Opportunity Score</p>
                                 <div className="mt-2 flex items-end gap-2">

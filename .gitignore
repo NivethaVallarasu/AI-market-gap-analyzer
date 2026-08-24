@@ -11,8 +11,6 @@ coverage/
 .env.*
 !.env.example
 
-<<<<<<< HEAD
-=======
 # Secrets and private keys
 *.pem
 *.key
@@ -32,7 +30,6 @@ uploads/
 tmp/
 temp/
 
->>>>>>> 4b7f4a6 (Signup and)
 # Logs and debug output
 *.log
 npm-debug.log*

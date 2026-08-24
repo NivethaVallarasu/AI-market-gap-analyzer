@@ -40,13 +40,8 @@ function getModelCandidates() {
         ?.trim()
         .replace(/^['"]|['"]$/g, "");
     const defaultModels = [
-<<<<<<< HEAD
-        "gemini-3.5-flash",
-        "gemini-3.5-flash-lite"
-=======
         "gemini-2.5-flash",
         "gemini-2.0-flash"
->>>>>>> 4b7f4a6 (Signup and)
     ];
 
     return [...new Set([configuredModel, ...defaultModels].filter(Boolean))];
@@ -59,13 +54,8 @@ function getVisionModelCandidates() {
 
     return [...new Set([
         configuredModel,
-<<<<<<< HEAD
-        "gemini-3.5-flash",
-        "gemini-3.5-flash-lite"
-=======
         "gemini-2.5-flash",
         "gemini-2.0-flash"
->>>>>>> 4b7f4a6 (Signup and)
     ].filter(Boolean))];
 }
 
@@ -76,11 +66,7 @@ function getAnalysisModelCandidates() {
 
     return [...new Set([
         configuredModel,
-<<<<<<< HEAD
-        "gemini-3.5-flash",
-=======
         "gemini-2.5-flash",
->>>>>>> 4b7f4a6 (Signup and)
         ...getModelCandidates()
     ].filter(Boolean))];
 }
