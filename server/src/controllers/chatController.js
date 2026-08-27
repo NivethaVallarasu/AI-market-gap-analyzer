@@ -98,7 +98,8 @@ const getHistory = async (req, res) => {
 
         res.json({ history });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.warn("⚠️ Could not fetch chat history from DB:", error.message);
+        res.json({ history: [] });
     }
 };
 

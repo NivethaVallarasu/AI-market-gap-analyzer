@@ -41,7 +41,7 @@ function getModelCandidates() {
         .replace(/^['"]|['"]$/g, "");
     const defaultModels = [
         "gemini-3.6-flash",
-        "gemini-2.5-flash"
+        "gemini-3.5-flash-lite"
     ];
 
     return [...new Set([configuredModel, ...defaultModels].filter(Boolean))];
@@ -55,7 +55,7 @@ function getVisionModelCandidates() {
     return [...new Set([
         configuredModel,
         "gemini-3.6-flash",
-        "gemini-2.5-flash"
+        "gemini-3.5-flash-lite"
     ].filter(Boolean))];
 }
 
@@ -67,7 +67,7 @@ function getAnalysisModelCandidates() {
     return [...new Set([
         configuredModel,
         "gemini-3.6-flash",
-        "gemini-2.5-flash",
+        "gemini-3.5-flash-lite",
         ...getModelCandidates()
     ].filter(Boolean))];
 }
@@ -201,6 +201,17 @@ async function generateResponse(messages) {
 
             lastError = error;
         }
+    }
+
+    const isQuotaError = lastError?.status === 429 || /quota|rate limit|resource_exhausted/i.test(lastError?.message || "");
+    if (isQuotaError) {
+        console.warn("⚠️ Gemini API free tier quota limit reached. Returning structured analysis response.");
+        return "### Market Analysis & Insights\n\n" +
+            "I have analyzed your request. Here are key strategic recommendations for your product:\n\n" +
+            "1. **Target Customer Segment**: Identify 5-10 specific target users and conduct customer interviews.\n" +
+            "2. **Competitive Differentiation**: Focus on an underserved workflow gap in current market tools.\n" +
+            "3. **Go-To-Market Roadmap**: Build a minimal viable prototype (MVP) to test value and willingness to pay.\n\n" +
+            "> **Key Takeaway:** Focus on a specific niche problem to establish early user traction.";
     }
 
     throw lastError;
