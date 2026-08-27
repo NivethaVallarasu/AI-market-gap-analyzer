@@ -1576,10 +1576,10 @@ function AuthScreen({ onAuthenticated }) {
         setIsSubmitting(true);
         try {
             if (isSignup) {
-                await signup(form.name.trim(), form.email.trim(), form.password);
-                setSuccess("Account created successfully! Please sign in with your account credentials.");
-                setMode("login");
-                setForm((current) => ({ ...current, password: "" }));
+                const response = await signup(form.name.trim(), form.email.trim(), form.password);
+                const storage = form.remember ? window.localStorage : window.sessionStorage;
+                storage.setItem("ai-market-gap-auth-token", response.data.token);
+                onAuthenticated();
             } else {
                 const response = await login(form.email.trim(), form.password);
                 const storage = form.remember ? window.localStorage : window.sessionStorage;
@@ -2145,11 +2145,12 @@ function App() {
         }
     ]);
 
+    const [history, setHistory] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isExportingPdf, setIsExportingPdf] = useState(false);
     const insightsRef = useRef(null);
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(() => typeof window !== "undefined" && window.innerWidth >= 768);
     const [theme, setTheme] = useState(() => {
         try {
             return window.localStorage.getItem("ai-market-gap-theme") || "dark";
@@ -2250,6 +2251,32 @@ function App() {
         setSelectedAttachment(null);
         setDataError("");
         logout().catch(() => {});
+    };
+
+    const handleAuthenticated = () => {
+        try {
+            window.localStorage.removeItem("ai-market-gap-sessionId");
+            window.localStorage.removeItem("ai-market-gap-messages");
+            window.localStorage.removeItem("ai-market-gap-analysis");
+            window.sessionStorage.removeItem("ai-market-gap-sessionId");
+            window.sessionStorage.removeItem("ai-market-gap-messages");
+            window.sessionStorage.removeItem("ai-market-gap-analysis");
+        } catch {
+            // ignore
+        }
+        setHistory([]);
+        setAnalyses([]);
+        setAnalysis(null);
+        setSelectedAttachment(null);
+        setMessage("");
+        setDataError("");
+        setPage("workspace");
+        setSessionId(uuidv4());
+        setMessages([{
+            sender: "bot",
+            text: "Hi! 👋 I'm your AI Market Gap Analyzer. What startup idea are you planning to build?"
+        }]);
+        setIsAuthenticated(true);
     };
     const handleSelectSession = async (targetSessionId) => {
         try {
@@ -2580,7 +2607,7 @@ function App() {
         }
     };
 
-    if (!isAuthenticated) return <AuthScreen onAuthenticated={() => setIsAuthenticated(true)} />;
+    if (!isAuthenticated) return <AuthScreen onAuthenticated={handleAuthenticated} />;
     if (page === "profile") return <ProfilePage user={user} analysesCount={(analyses || []).length} onBack={() => setPage("workspace")} onSave={(updatedUser) => setUser((current) => ({ ...current, ...updatedUser }))} onSignOut={handleSignOut} />;
     if (page === "history") return <AnalysisHistoryPage analyses={analyses || []} error={dataError} onBack={() => setPage("workspace")} onDelete={async (id) => { await deleteAnalysis(id); setAnalyses((current) => (current || []).filter((item) => item._id !== id)); }} />;
     return (
