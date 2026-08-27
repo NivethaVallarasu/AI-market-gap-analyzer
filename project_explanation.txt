@@ -1,0 +1,72 @@
+AI Market Gap Analyzer Project Explanation
+
+1. Project Overview
+This project is an AI-powered startup research assistant. Its main goal is to help a user think about a business idea and understand whether the idea has market potential. In simple words, the app lets the user describe an idea, asks helpful questions, stores the conversation, and then creates a market analysis report with an opportunity score, competitors, market gaps, SWOT, and roadmap.
+
+2. Complete Architecture Flow
+User → Frontend → Backend → AI Models / APIs → Database → Response
+
+When the user uses the app, the frontend collects the message and sends it to the backend. The backend processes the request, may call AI services, stores the conversation in MongoDB, and sends the result back to the frontend.
+
+3. Technology Stack Explanation
+Frontend:
+- React: builds the user interface.
+- Vite: runs and builds the frontend.
+- Tailwind CSS: styles the UI.
+- Axios: sends API requests.
+- React Icons: adds icons.
+- UUID: creates a unique session ID.
+
+Backend:
+- Node.js: runs JavaScript on the server.
+- Express.js: creates the server and routes.
+- CORS: allows frontend and backend communication.
+- dotenv: loads environment variables.
+
+Database:
+- MongoDB: stores conversation data.
+- Mongoose: helps work with MongoDB.
+
+4. AI/ML Components
+The app uses AI in two main ways:
+- Chat assistant: the backend sends messages to an AI model and gets a reply.
+- Market analysis: the backend creates a report using the conversation and AI-generated analysis.
+
+Used models:
+- gemini-3.5-flash
+- gemini-3.5-flash-lite
+
+5. API Explanation
+- Chat API: /api/chat
+- Analysis API: /api/analyze
+- Product Hunt API: used to enrich analysis with product data.
+
+6. External Resources and Services
+- MongoDB Atlas: stores conversation data.
+- Google Gemini API: provides AI models.
+- Product Hunt API: provides competitor/product insights.
+- Environment variables: configure API keys and database connection.
+
+7. Folder Structure Explanation
+- client: contains the frontend app.
+- server: contains the backend app.
+- server/src/routes: defines API routes.
+- server/src/controllers: handles request logic.
+- server/src/services: contains AI and analysis logic.
+- server/src/models: defines database schema.
+- server/src/config: database configuration.
+
+8. Backend Execution Flow
+When the app starts, the server loads environment variables, connects to MongoDB, and starts listening for requests. When an API request arrives, the route is matched, the controller handles it, and the service performs the needed processing. The response is then sent back to the frontend.
+
+9. Frontend Execution Flow
+The React app loads, shows a welcome message, and creates a session ID. When the user sends a message, the frontend sends it to the backend, receives the bot reply, and displays it in chat. When the user clicks Analyze, the app shows the generated market insights.
+
+10. Database Flow
+When a user sends a message, the backend saves the conversation to MongoDB. The conversation is stored using the session ID so the app can maintain a chat history.
+
+11. AI Pipeline Flow
+User message → backend processing → AI model → response generation → display to user
+
+12. Interview Explanation
+This project is an AI-powered startup research assistant. It lets users describe their startup idea, chat with an AI assistant, and generate a market analysis report with insights about competitors, gaps, SWOT, and roadmap. The project combines React, Express, MongoDB, and AI APIs into a single full-stack experience.
